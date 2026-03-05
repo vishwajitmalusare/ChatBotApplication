@@ -1,0 +1,51 @@
+# Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.eclipse
+
+# Logs
+logs/
+
+# Environment
+.env
+application-local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Logs
+npm-debug.log*
+
+# Environment
+.env.local
+.env.production
+
+# Environment
+application-prod.properties
+
+# AI / ML
+*.gguf
+*.bin
+*.pt
+*.onnx
+*.safetensors
+models/
+embeddings/
+vector-store/
+**/application.properties
+**/application.yml
