@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import InputBox from "./InputBox";
 
-const ChatWindow = ({ messages, loading, onSend }) => {
+const ChatWindow = ({ messages, loading, onSend, isDark }) => {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -10,17 +10,21 @@ const ChatWindow = ({ messages, loading, onSend }) => {
   }, [messages]);
 
   return (
-    <div className="flex flex-col flex-1 h-screen">
+    <div className={`flex flex-col flex-1 h-screen ${isDark ? "bg-gray-800" : "bg-white"}`}>
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-700 bg-gray-800">
-        <h1 className="text-white font-semibold text-lg">ChatBot (llama3)</h1>
-        <p className="text-gray-400 text-xs">Powered by Ollama + pgvector</p>
+      <div className={`px-6 py-4 border-b ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}>
+        <h1 className={`font-semibold text-lg ${isDark ? "text-white" : "text-gray-800"}`}>
+          ChatBot (llama3)
+        </h1>
+        <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          Powered by Ollama + pgvector
+        </p>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-gray-800">
+      <div className={`flex-1 overflow-y-auto p-6 flex flex-col gap-6 ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
         {messages.map((msg, idx) => (
-          <MessageBubble key={idx} message={msg} />
+          <MessageBubble key={idx} message={msg} isDark={isDark} />
         ))}
 
         {loading && (
@@ -28,7 +32,7 @@ const ChatWindow = ({ messages, loading, onSend }) => {
             <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">
               AI
             </div>
-            <div className="bg-gray-700 px-4 py-3 rounded-2xl text-sm text-gray-400 italic">
+            <div className={`px-4 py-3 rounded-2xl text-sm italic ${isDark ? "bg-gray-700 text-gray-400" : "bg-gray-200 text-gray-500"}`}>
               Thinking...
             </div>
           </div>
@@ -37,7 +41,7 @@ const ChatWindow = ({ messages, loading, onSend }) => {
       </div>
 
       {/* Input */}
-      <InputBox onSend={onSend} loading={loading} />
+      <InputBox onSend={onSend} loading={loading} isDark={isDark} />
     </div>
   );
 };

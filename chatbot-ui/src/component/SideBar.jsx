@@ -1,19 +1,31 @@
-  const Sidebar = ({ onNewChat }) => {
-    return (
-      <div className="w-64 bg-gray-900 h-screen flex flex-col p-4">
-        <div className="text-white text-xl font-bold mb-6">🤖 ChatBot</div>
-        <button
-          onClick={onNewChat}
-          className="border border-gray-600 text-white rounded-lg px-4 py-2 text-sm hover:bg-gray-700 transition-colors text-left"
-        >
-          + New Chat
-        </button>
-        <div className="bg-red-500 text-white p-6">
-          Tailwind Test
-        </div>
-      </div>
+const Sidebar = ({ onNewChat, isDark, toggleTheme }) => {
+  return (
+    <div className={isDark ? "w-64 h-screen flex flex-col p-4 bg-gray-900" : "w-64 h-screen flex flex-col p-4 bg-gray-200"}>
       
-    );
-  };
+      <div className={isDark ? "text-xl font-bold mb-6 text-white" : "text-xl font-bold mb-6 text-gray-800"}>
+        🤖 ChatBot
+      </div>
 
-  export default Sidebar;
+      {/* New Chat */}
+      <button
+        onClick={onNewChat}
+        className={isDark ? "border border-gray-600 text-white hover:bg-gray-700 rounded-lg px-4 py-2 text-sm text-left transition-colors mb-4" : "border border-gray-400 text-gray-800 hover:bg-gray-300 rounded-lg px-4 py-2 text-sm text-left transition-colors mb-4"}
+      >
+        + New Chat
+      </button>
+
+      {/* Theme Toggle */}
+      <div className="mt-auto">
+        <button
+          onClick={toggleTheme}
+          className={isDark ? "w-full border border-gray-600 text-white hover:bg-gray-700 rounded-lg px-4 py-2 text-sm text-left transition-colors" : "w-full border border-gray-400 text-gray-800 hover:bg-gray-300 rounded-lg px-4 py-2 text-sm text-left transition-colors"}
+        >
+          {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
+        </button>
+      </div>
+
+    </div>
+  );
+};
+
+export default Sidebar;
