@@ -27,7 +27,7 @@ public class SessionController {
         return  ResponseEntity.ok(session);
     }
 
-    @GetMapping("/{sessionId}")
+    @GetMapping
     public ResponseEntity<List<Session>> getSessions(@AuthenticationPrincipal UserDetails userDetails) {
         List<Session> sessions = sessionService.getUserSessions(userDetails.getUsername());
         return ResponseEntity.ok(sessions);
