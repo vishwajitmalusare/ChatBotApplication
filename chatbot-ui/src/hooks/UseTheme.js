@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-export const UseTheme = () => {
+export const useTheme = () => {
     const [isDark, setIsDark] = useState(true);
 
     const toggleTheme = () => setIsDark(prev => !prev);

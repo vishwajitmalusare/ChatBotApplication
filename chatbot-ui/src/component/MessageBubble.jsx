@@ -4,8 +4,8 @@ const MessageBubble = ({ message, isDark }) => {
   return (
     <div className={`flex items-start gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0
-        ${isUser ? "bg-green-500" : "bg-purple-600"} text-white`}>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white
+        ${isUser ? "bg-green-500" : "bg-purple-600"}`}>
         {isUser ? "U" : "AI"}
       </div>
 

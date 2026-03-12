@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import InputBox from "./InputBox";
 
-const ChatWindow = ({ messages, loading, onSend, isDark }) => {
+const ChatWindow = ({ messages, loading, onSend, isDark, activeSession }) => {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ const ChatWindow = ({ messages, loading, onSend, isDark }) => {
       {/* Header */}
       <div className={`px-6 py-4 border-b ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}>
         <h1 className={`font-semibold text-lg ${isDark ? "text-white" : "text-gray-800"}`}>
-          ChatBot (llama3)
+          {activeSession ? activeSession.title : "Select a Session"}
         </h1>
         <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           Powered by Ollama + pgvector
@@ -23,6 +23,13 @@ const ChatWindow = ({ messages, loading, onSend, isDark }) => {
 
       {/* Messages */}
       <div className={`flex-1 overflow-y-auto p-6 flex flex-col gap-6 ${isDark ? "bg-gray-800" : "bg-gray-50"}`}>
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+              {activeSession ? "No messages yet. Start chatting!" : "Create or select a session to start"}
+            </p>
+          </div>
+        )}
         {messages.map((msg, idx) => (
           <MessageBubble key={idx} message={msg} isDark={isDark} />
         ))}
@@ -41,7 +48,7 @@ const ChatWindow = ({ messages, loading, onSend, isDark }) => {
       </div>
 
       {/* Input */}
-      <InputBox onSend={onSend} loading={loading} isDark={isDark} />
+      <InputBox onSend={onSend} loading={loading} isDark={isDark} disabled={!activeSession}/>
     </div>
   );
 };
