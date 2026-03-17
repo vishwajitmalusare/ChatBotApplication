@@ -13,22 +13,28 @@ import java.util.List;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-    @Query(value = "SELECT id, user_message, ai_response, session_id, user_id, created_at " +
-            "FROM chat_message WHERE session_id = :sessionId ORDER BY created_at ASC",
+    @Query(value = "SELECT cm.id, cm.user_message, cm.ai_response, cm.session_id, cm.user_id, cm.created_at " +
+            "FROM chat_message cm WHERE cm.session_id = :sessionId ORDER BY cm.created_at ASC",
             nativeQuery = true)
     List<ChatMessage> findBySessionId(@Param("sessionId") Long sessionId);
 
-    @Query(value = "SELECT id, user_message, ai_response, session_id, user_id, created_at " +
-            "FROM chat_message WHERE embedding <-> CAST(:embedding AS vector) < 0.3 " +
-            "ORDER BY embedding <-> CAST(:embedding AS vector) LIMIT 1",
+    @Query(value = "SELECT cm.id, cm.user_message, cm.ai_response, cm.session_id, cm.user_id, cm.created_at " +
+            "FROM chat_message cm " +
+            "WHERE cm.session_id = :sessionId " +
+            "AND cm.embedding <-> CAST(:embedding AS vector) < 0.2 " +
+            "ORDER BY cm.embedding <-> CAST(:embedding AS vector) LIMIT 1",
             nativeQuery = true)
-    List<ChatMessage> findExactSimilar(@Param("embedding") String embedding);
+    List<ChatMessage> findExactSimilar(@Param("embedding") String embedding,
+                                       @Param("sessionId") Long sessionId);
 
-    @Query(value = "SELECT id, user_message, ai_response, session_id, user_id, created_at " +
-            "FROM chat_message WHERE embedding <-> CAST(:embedding AS vector) < 0.5 " +
-            "ORDER BY embedding <-> CAST(:embedding AS vector) LIMIT 5",
+    @Query(value = "SELECT cm.id, cm.user_message, cm.ai_response, cm.session_id, cm.user_id, cm.created_at " +
+            "FROM chat_message cm " +
+            "WHERE cm.session_id = :sessionId " +
+            "AND cm.embedding <-> CAST(:embedding AS vector) < 0.5 " +
+            "ORDER BY cm.embedding <-> CAST(:embedding AS vector) LIMIT 5",
             nativeQuery = true)
-    List<ChatMessage> findMostSimilar(@Param("embedding") String embedding);
+    List<ChatMessage> findMostSimilar(@Param("embedding") String embedding,
+                                      @Param("sessionId") Long sessionId);
 
     @Modifying
     @Transactional
