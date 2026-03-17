@@ -10,7 +10,7 @@ export default function App() {
   const { token, user, error, loading: authLoading, handleLogin, handleRegister, handleLogout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { sessions, activeSession, setActiveSession, handleCreateSession, handleDeleteSession } = useSession(token);
-  const { messages, loading, sendUserMessage } = useChat(token, activeSession);
+  const { messages, loading, sendUserMessage, sendFile } = useChat(token, activeSession);
 
   console.log("🔑 App token:", token);
   console.log("🗂 App activeSession:", activeSession);
@@ -43,6 +43,7 @@ export default function App() {
         messages={messages}
         loading={loading}
         onSend={sendUserMessage}
+        onFileUpload={sendFile}
         isDark={isDark}
         activeSession={activeSession}
       />

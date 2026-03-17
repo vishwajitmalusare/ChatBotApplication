@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import InputBox from "./InputBox";
 
-const ChatWindow = ({ messages, loading, onSend, isDark, activeSession }) => {
+const ChatWindow = ({ messages, loading, onSend, onFileUpload, isDark, activeSession }) => {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const ChatWindow = ({ messages, loading, onSend, isDark, activeSession }) => {
       </div>
 
       {/* Input */}
-      <InputBox onSend={onSend} loading={loading} isDark={isDark} disabled={!activeSession}/>
+      <InputBox onSend={onSend} onFileUpload={onFileUpload} loading={loading} isDark={isDark} disabled={!activeSession}/>
     </div>
   );
 };
