@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSessionMessages, sendMessage } from "../services/ChatService";
+import { getSessionMessages, sendMessage, streamMessage } from "../services/ChatService";
 import { uploadFile } from "../services/FileService";
 
 export const useChat = (token, activeSession) => {
@@ -31,14 +31,34 @@ export const useChat = (token, activeSession) => {
 
     if (!message.trim() || loading || !activeSession) return;
 
+    // Add user message
     setMessages(prev => [...prev, { role: "user", text: message }]);
+
+    // Add empty AI message that will be filled word by word
+    setMessages(prev => [...prev, { role: "ai", text: "" }]);
     setLoading(true);
 
     try {
-      const aiResponse = await sendMessage(message, activeSession.id, token);
-      setMessages(prev => [...prev, { role: "ai", text: aiResponse }]);
-    } catch (err) {
-      setMessages(prev => [...prev, { role: "ai", text: "⚠️ Error connecting to server." }]);
+      await streamMessage(message, activeSession.id, token, (chunk) => {
+        // Update last AI message with each chunk
+        setMessages(prev => {
+          const updated = [...prev];
+          const lastMsg = updated[updated.length - 1];
+          if (lastMsg.role === "ai") {
+            updated[updated.length - 1] = {
+              ...lastMsg,
+              text: lastMsg.text + chunk
+            };
+          }
+          return updated;
+        });
+      });
+       } catch (err) {
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "ai", text: "⚠️ Error connecting to server." };
+        return updated;
+      });
     } finally {
       setLoading(false);
     }

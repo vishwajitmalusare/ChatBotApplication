@@ -7,9 +7,12 @@ import com.example.chatbot.repository.ChatMessageRepository;
 import com.example.chatbot.repository.SessionRepository;
 import com.example.chatbot.repository.UserRepository;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.StreamingChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +30,9 @@ public class ChatService {
     private ChatModel chatModel;
 
     @Autowired
+    private StreamingChatModel streamingChatModel;
+
+    @Autowired
     private SessionRepository sessionRepository;
 
     @Autowired
@@ -42,90 +48,25 @@ public class ChatService {
         return sb.toString();
     }
 
-//    public String getResponse(String message, Long sessionId, String username) {
-//
-//        // Get user and session
-//        User user = userRepository.findByUsername(username)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//        Session session = sessionRepository.findById(sessionId)
-//                .orElseThrow(() -> new RuntimeException("Session not found"));
-//
-//        // 1️⃣ Generate embedding
-//        float[] embedding = embeddingModel.embed(message);
-//        String embeddingStr = toVectorString(embedding);
-//
-//        // 2️⃣ Check semantic cache
-//        List<ChatMessage> exactMatch = repository.findExactSimilar(embeddingStr);  // ✅ fixed
-//        if (!exactMatch.isEmpty()) {
-//            System.out.println("✅ Cache hit! Returning existing response.");
-//            return exactMatch.get(0).getAiResponse();
-//        }
-//
-//        // 3️⃣ Retrieve similar past messages for context
-//        List<ChatMessage> similarMessages = repository.findMostSimilar(embeddingStr);
-//
-//        // 4️⃣ Build prompt
-//        StringBuilder prompt = new StringBuilder();
-//        for (ChatMessage chat : similarMessages) {
-//            prompt.append("User: ").append(chat.getUserMessage()).append("\n");
-//            prompt.append("AI: ").append(chat.getAiResponse()).append("\n");
-//        }
-//        prompt.append("User: ").append(message).append("\nAI:");
-//
-//        // 5️⃣ Call AI
-//        String aiResponse = chatModel.call(prompt.toString());
-//        System.out.println("🤖 AI Response: " + aiResponse);
-//
-//        // 6️⃣ Save new message + embedding
-//        repository.insertWithEmbedding(message, aiResponse, embeddingStr, session.getId(), user.getId());
-//        System.out.println("💾 New response saved to DB.");
-//
-//        return aiResponse;
-//    }
-//
-
-    public String getResponse (String message, Long sessionId, String username) {
-        // Get user and session
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Session not found"));
-
-        // Generate embedding
-        float[] embedding = embeddingModel.embed(message);
-        String embeddingStr = toVectorString(embedding);
-
-        // Check semantic cache per session
-        List<ChatMessage> exactMatch = repository.findExactSimilar(embeddingStr, session.getId());
-        if (!exactMatch.isEmpty()) {
-            System.out.println(" Cache hit!");
-            return exactMatch.get(0).getAiResponse();
-        }
-
-        // Get last 10 messages from current session
-        List<ChatMessage> sessionMessages = repository.findBySessionId(sessionId);
-        List<ChatMessage> recentMessages = sessionMessages.stream()
-                .skip(Math.max(0, sessionMessages.size() - 10))
-                .collect(Collectors.toList());
-
-        // Get similar messages for extra context
-        List<ChatMessage> similarMessages = repository.findMostSimilar(embeddingStr, session.getId());
-
-        //Build Prompt
+    private StringBuilder buildPrompt(List<ChatMessage> recentMessages,
+                                      List<ChatMessage> similarMessages,
+                                      String message) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are a helpful assistant. use the conversation history below to maintain context.\n\n");
+        prompt.append("You are a helpful assistant. Use the conversation history below to maintain context.\n\n");
+        prompt.append("Important: Always format responses with:\n");
+        prompt.append("- Each bullet point on a new line\n");
+        prompt.append("- A blank line between sections\n");
+        prompt.append("- Proper spacing after punctuation\n\n");
 
-        // Add conversation history
         if (!recentMessages.isEmpty()) {
             prompt.append("Conversation history:\n");
             for (ChatMessage chat : recentMessages) {
                 prompt.append("User: ").append(chat.getUserMessage()).append("\n");
                 prompt.append("AI: ").append(chat.getAiResponse()).append("\n");
             }
-            prompt.append("/n");
+            prompt.append("\n");
         }
 
-        // Add similar context of not already in history
         if (!similarMessages.isEmpty()) {
             prompt.append("Related context:\n");
             for (ChatMessage chat : similarMessages) {
@@ -139,6 +80,38 @@ public class ChatService {
 
         prompt.append("Current question:\n");
         prompt.append("User: ").append(message).append("\nAI:");
+        return prompt;
+    }
+
+    public String getResponse(String message, Long sessionId, String username) {
+        // Get user and session
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        // Generate embedding
+        float[] embedding = embeddingModel.embed(message);
+        String embeddingStr = toVectorString(embedding);
+
+        // Check semantic cache
+        List<ChatMessage> exactMatch = repository.findExactSimilar(embeddingStr, session.getId());
+        if (!exactMatch.isEmpty()) {
+            System.out.println("✅ Cache hit!");
+            return exactMatch.get(0).getAiResponse();
+        }
+
+        // Get last 10 messages from session
+        List<ChatMessage> sessionMessages = repository.findBySessionId(sessionId);
+        List<ChatMessage> recentMessages = sessionMessages.stream()
+                .skip(Math.max(0, sessionMessages.size() - 10))
+                .collect(Collectors.toList());
+
+        // Get similar messages
+        List<ChatMessage> similarMessages = repository.findMostSimilar(embeddingStr, session.getId());
+
+        // Build prompt
+        StringBuilder prompt = buildPrompt(recentMessages, similarMessages, message);
 
         // Call AI
         String aiResponse = chatModel.call(prompt.toString());
@@ -148,7 +121,58 @@ public class ChatService {
         repository.insertWithEmbedding(message, aiResponse, embeddingStr, session.getId(), user.getId());
         System.out.println("💾 Saved to DB.");
 
-        return  aiResponse;
+        return aiResponse;
+    }
+
+    public Flux<String> getStreamingResponse(String message, Long sessionId, String username) {
+        // Get user and session
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        // Generate embedding
+        float[] embedding = embeddingModel.embed(message);
+        String embeddingStr = toVectorString(embedding);
+
+        // Check semantic cache
+        List<ChatMessage> exactMatch = repository.findExactSimilar(embeddingStr, session.getId());
+        if (!exactMatch.isEmpty()) {
+            System.out.println("✅ Cache hit!");
+            return Flux.just(exactMatch.get(0).getAiResponse());
+        }
+
+        // Get last 10 messages from session
+        List<ChatMessage> sessionMessages = repository.findBySessionId(sessionId);
+        List<ChatMessage> recentMessages = sessionMessages.stream()
+                .skip(Math.max(0, sessionMessages.size() - 10))
+                .collect(Collectors.toList());
+
+        // Get similar messages
+        List<ChatMessage> similarMessages = repository.findMostSimilar(embeddingStr, session.getId());
+
+        // Build prompt
+        StringBuilder prompt = buildPrompt(recentMessages, similarMessages, message);
+
+        // Stream response
+        StringBuilder fullResponse = new StringBuilder();
+
+        return streamingChatModel.stream(new Prompt(prompt.toString()))
+                .map(response -> {
+                    String chunk = response.getResult().getOutput().getText();
+                    if (chunk != null) fullResponse.append(chunk);
+                    return chunk != null ? chunk : "";
+                })
+                .doOnComplete(() -> {
+                    repository.insertWithEmbedding(
+                            message,
+                            fullResponse.toString(),
+                            embeddingStr,
+                            session.getId(),
+                            user.getId()
+                    );
+                    System.out.println("💾 Saved to DB.");
+                });
     }
 
     public List<ChatMessage> getSessionMessages(Long sessionId) {

@@ -2,10 +2,12 @@ package com.example.chatbot.controller;
 
 import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.services.ChatService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -30,6 +32,14 @@ public class ChatController {
     @GetMapping("/{sessionId}/messages")
     public ResponseEntity<List<ChatMessage>> getMessages(@PathVariable Long sessionId) {
         return ResponseEntity.ok(chatService.getSessionMessages(sessionId));
+    }
+
+    @PostMapping(value = "/{sessionId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> streamChat(
+            @PathVariable Long sessionId,
+            @RequestBody ChatRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return chatService.getStreamingResponse(request.getMessage(), sessionId, userDetails.getUsername());
     }
 
     public static class ChatRequest {

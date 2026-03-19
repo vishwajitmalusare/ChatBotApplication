@@ -28,6 +28,14 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
 
+        // Also check query param for SSE requests
+        if (authHeader == null) {
+            String tokenParam = request.getParameter("token");
+            if (tokenParam != null) {
+                authHeader = "Bearer " + tokenParam;
+            }
+        }
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             if (jwtUtil.isTokenValid(token)) {
