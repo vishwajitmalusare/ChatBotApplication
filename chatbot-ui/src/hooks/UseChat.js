@@ -27,42 +27,40 @@ export const useChat = (token, activeSession) => {
     }
   };
 
-  const sendUserMessage = async (message) => {
-
+ const sendUserMessage = async (message) => {
     if (!message.trim() || loading || !activeSession) return;
 
-    // Add user message
     setMessages(prev => [...prev, { role: "user", text: message }]);
-
-    // Add empty AI message that will be filled word by word
-    setMessages(prev => [...prev, { role: "ai", text: "" }]);
     setLoading(true);
+    let isFirstChunk = true;  // ✅ track first chunk
 
     try {
       await streamMessage(message, activeSession.id, token, (chunk) => {
-        // Update last AI message with each chunk
-        setMessages(prev => {
-          const updated = [...prev];
-          const lastMsg = updated[updated.length - 1];
-          if (lastMsg.role === "ai") {
-            updated[updated.length - 1] = {
-              ...lastMsg,
-              text: lastMsg.text + chunk
-            };
-          }
-          return updated;
-        });
+        if (isFirstChunk) {
+          // ✅ add AI bubble only when first chunk arrives
+          setMessages(prev => [...prev, { role: "ai", text: chunk }]);
+          isFirstChunk = false;
+        } else {
+          // ✅ append to existing AI bubble
+          setMessages(prev => {
+            const updated = [...prev];
+            const lastMsg = updated[updated.length - 1];
+            if (lastMsg.role === "ai") {
+              updated[updated.length - 1] = {
+                ...lastMsg,
+                text: lastMsg.text + chunk
+              };
+            }
+            return updated;
+          });
+        }
       });
-       } catch (err) {
-      setMessages(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { role: "ai", text: "⚠️ Error connecting to server." };
-        return updated;
-      });
+    } catch (err) {
+      setMessages(prev => [...prev, { role: "ai", text: "⚠️ Error connecting to server." }]);
     } finally {
       setLoading(false);
     }
-  };
+};
 
 const sendFile = async (file) => {
     console.log("📎 File:", file);
