@@ -1,4 +1,7 @@
 import { useState, useRef } from "react";
+import { ImAttachment } from "react-icons/im";
+import { FaArrowAltCircleRight } from "react-icons/fa";
+import { GiSandsOfTime } from "react-icons/gi";
 
 const InputBox = ({ onSend, onFileUpload, loading, isDark, disabled }) => {
   const [input, setInput] = useState("");
@@ -34,7 +37,9 @@ const InputBox = ({ onSend, onFileUpload, loading, isDark, disabled }) => {
 
       {selectedFile && (
         <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-purple-500/10 border border-purple-500/30 rounded-xl">
-          <span className="text-purple-400 text-xs">📎 {selectedFile.name}</span>
+          <span className="text-purple-400 text-xs flex items-center gap-1">
+            <ImAttachment className="text-xs" />
+             {selectedFile.name}</span>
           <button onClick={() => setSelectedFile(null)} className="ml-auto text-gray-400 hover:text-white text-xs">✕</button>
         </div>
       )}
@@ -52,7 +57,7 @@ const InputBox = ({ onSend, onFileUpload, loading, isDark, disabled }) => {
             ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           title="Upload file"
         >
-          📎
+          <ImAttachment />
         </button>
         <input
           ref={fileInputRef}
@@ -83,11 +88,11 @@ const InputBox = ({ onSend, onFileUpload, loading, isDark, disabled }) => {
               ? "bg-gray-600 cursor-not-allowed"
               : "bg-gradient-to-br from-purple-500 to-blue-500 hover:opacity-90 shadow-purple-500/20"}`}
         >
-          {loading ? "⏳" : "➤"}
+          {loading ? <GiSandsOfTime className="text-lg" /> : <FaArrowAltCircleRight className="text-lg" />}
         </button>
       </div>
       <p className={`text-xs text-center mt-2 ${isDark ? "text-gray-600" : "text-gray-400"}`}>
-        Enter to send • Shift+Enter for new line • 📎 PDF, DOCX, TXT, Images
+        Enter to send • Shift+Enter for new line • PDF, DOCX, TXT, Images
       </p>
     </div>
   );

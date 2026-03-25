@@ -1,4 +1,6 @@
 import { useState } from "react";
+import ThemeSwitch from "./ThemeSwitch";
+import { SlLogout } from "react-icons/sl";
 
 const Sidebar = ({ sessions, activeSession, onSelectSession, onNewSession, onDeleteSession, onLogout, user, isDark, toggleTheme }) => {
   const [newSessionTitle, setNewSessionTitle] = useState("");
@@ -93,20 +95,27 @@ const Sidebar = ({ sessions, activeSession, onSelectSession, onNewSession, onDel
 
       {/* Footer */}
       <div className={`p-4 border-t ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col gap-2`}>
-        <button
-          onClick={toggleTheme}
-          className={`w-full rounded-xl px-4 py-2.5 text-sm text-left transition-all
-            ${isDark
-              ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-        >
-          {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
+        
+        {/* ✅ Premium Theme Switch */}
+        <ThemeSwitch isDark={isDark} toggleTheme={toggleTheme} />
+
         <button
           onClick={onLogout}
-          className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-xl px-4 py-2.5 text-sm transition-all"
+          className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all
+    ${isDark
+              ? "border-gray-800 hover:bg-gray-800/60"
+              : "border-gray-200 hover:bg-gray-100"
+            }`}
         >
-          🚪 Logout
+          <div className="flex items-center gap-2">
+            <SlLogout className="text-red-400 text-base" />
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Logout
+            </span>
+          </div>
+
+          {/* Optional subtle arrow (like premium UI) */}
+          <span className="text-xs text-gray-400">↗</span>
         </button>
       </div>
     </div>
