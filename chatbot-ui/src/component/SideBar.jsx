@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ThemeSwitch from "./ThemeSwitch";
 import { SlLogout } from "react-icons/sl";
+import { GoTrash } from "react-icons/go";
 
 const Sidebar = ({ sessions, activeSession, onSelectSession, onNewSession, onDeleteSession, onLogout, user, isDark, toggleTheme }) => {
   const [newSessionTitle, setNewSessionTitle] = useState("");
@@ -87,7 +88,7 @@ const Sidebar = ({ sessions, activeSession, onSelectSession, onNewSession, onDel
               onClick={e => { e.stopPropagation(); onDeleteSession(session.id); }}
               className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all ml-2"
             >
-              🗑
+              <GoTrash />
             </button>
           </div>
         ))}

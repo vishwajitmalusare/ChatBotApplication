@@ -8,7 +8,7 @@ const MessageBubble = ({ message, isDark }) => {
       {/* Avatar */}
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 text-white shadow-lg
         ${isUser
-          ? "bg-gradient-to-br from-green-400 to-emerald-500"
+          ? "bg-gradient-to-br from-purple-300 to-blue-300"
           : "bg-gradient-to-br from-purple-500 to-blue-500"}`}>
         {isUser ? "U" : "🤖"}
       </div>
@@ -16,7 +16,7 @@ const MessageBubble = ({ message, isDark }) => {
       {/* Bubble */}
       <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
         ${isUser
-          ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-tr-sm"
+          ? "bg-gradient-to-br from-purple-300 to-blue-300 text-white rounded-tr-sm"
           : isDark
             ? "bg-gray-800 text-gray-100 rounded-tl-sm border border-gray-700"
             : "bg-white text-gray-800 rounded-tl-sm border border-gray-200 shadow-md"}`}>
