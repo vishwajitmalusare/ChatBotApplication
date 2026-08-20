@@ -47,5 +47,5 @@ application-prod.properties
 models/
 embeddings/
 vector-store/
-**/application.properties
-**/application.yml
+# **/application.properties
+# **/application.yml
