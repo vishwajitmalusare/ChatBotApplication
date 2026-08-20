@@ -1,4 +1,4 @@
-import Sidebar from "./component/Sidebar";
+import Sidebar from "./component/SideBar";
 import ChatWindow from "./component/ChatWindow"; 
 import LoginPage from "./pages/LoginPage";
 import { useAuth } from "./hooks/UseAuth";
